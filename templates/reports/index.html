@@ -1,0 +1,105 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f7f2">
+  <meta name="description" content="Turn a photo of a public issue into a clear, editable civic report.">
+  <title>FixIt Forward — make the next step count</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'reports/app.css' %}">
+  <link rel="stylesheet" href="{% static 'reports/polish.css' %}">
+  <script defer src="{% static 'reports/app.js' %}"></script>
+</head>
+<body>
+  <form hidden>{% csrf_token %}</form>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="FixIt Forward home">
+        <span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5 28.5 26H3.5L16 3.5Z"/><path d="M16 11v8m0 3.4v.1"/></svg></span>
+        <span class="brand-name">FixIt <span>Forward</span></span>
+      </a>
+      <div class="topbar-right"><span class="privacy-chip"><span class="privacy-dot"></span> Self-hosted</span><a class="nav-link" href="#how-it-works">How it works</a><span class="avatar">FF</span></div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> A small step toward better streets</div>
+          <h1 id="hero-title">See something?<br><span>Move it forward.</span></h1>
+          <p>Turn a photo of a public issue into a clear report you can review, save, and send to the right people.</p>
+          <div class="hero-proof"><span class="proof-icon">✳</span><span>AI runs on your app server. Your photo isn’t sent to a third-party AI service.</span></div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="sun"></div><div class="cloud cloud-one"></div><div class="cloud cloud-two"></div>
+          <div class="hill hill-back"></div><div class="hill hill-front"></div>
+          <div class="road"></div><div class="road-line"></div>
+          <div class="building building-one"><i></i><i></i><i></i></div><div class="building building-two"><i></i><i></i></div>
+          <div class="tree tree-one"><i></i><b></b></div><div class="tree tree-two"><i></i><b></b></div>
+          <div class="pin"><span>+</span></div><div class="art-caption"><span class="caption-dot"></span> Better starts here</div>
+        </div>
+      </section>
+
+      <section class="workspace" aria-label="Create an issue report">
+        <div class="workspace-heading">
+          <div><div class="section-kicker">YOUR REPORT</div><h2>Make it easy to act</h2></div>
+          <div class="step-indicator" aria-label="Report steps"><span class="step-active" data-step="1">01</span><i></i><span data-step="2">02</span><i></i><span data-step="3">03</span></div>
+        </div>
+        <div class="workspace-grid">
+          <div class="work-card">
+            <div class="card-topline"><span class="step-number">01</span><div><h3>Show us what you found</h3><p>A clear photo helps explain the issue. Keep people’s faces and plates out of frame.</p></div></div>
+            <div class="upload-zone" id="drop-zone" tabindex="0" role="button" aria-label="Choose a photo to upload">
+              <input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+              <div class="upload-empty" id="upload-empty">
+                <div class="upload-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 21V5m0 0-6 6m6-6 6 6M6 19v7h20v-7"/></svg></div>
+                <div class="upload-title">Drop your photo here</div><div class="upload-subtitle">or <button type="button" class="text-button" id="browse-button">browse files</button></div>
+                <span class="file-note">JPG, PNG or WEBP · up to {{ max_upload_mb }} MB</span>
+              </div>
+              <div class="upload-preview hidden" id="upload-preview"><img id="preview-image" alt="Preview of the selected civic issue photo"><div class="preview-overlay"><span id="file-name">Selected photo</span><button type="button" class="change-photo" id="change-photo">Change photo</button></div></div>
+            </div>
+            <div class="photo-help"><span>ⓘ</span> A photo of the issue itself works best. We don’t read photo location metadata.</div>
+            <button class="button button-dark analyze-button" id="analyze-button" type="button" disabled><span>Analyze photo</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5"/></svg></button>
+            <div class="inline-error" id="upload-error" role="alert" aria-live="polite"></div>
+          </div>
+
+          <aside class="side-column" id="how-it-works">
+            <div class="why-card"><div class="why-heading"><span class="why-icon">✳</span><span>Good to know</span></div><p>AI gives you a first draft, not the final word. Check the details before saving.</p><div class="why-divider"></div><div class="local-row"><span class="local-symbol">⌂</span><span><b>Open-weight model</b><small>Inference runs on this app’s server.</small></span><span class="local-check">✓</span></div></div>
+            <div class="mini-steps"><div class="mini-step"><span class="mini-icon">↗</span><span><b>1. Add a photo</b><small>Capture what needs attention.</small></span></div><div class="mini-step"><span class="mini-icon">✎</span><span><b>2. Review your report</b><small>Keep, change, or add details.</small></span></div><div class="mini-step"><span class="mini-icon">→</span><span><b>3. Take the next step</b><small>Copy or export it to share.</small></span></div></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="editor-section hidden" id="editor-section" aria-labelledby="editor-title">
+        <div class="workspace-heading editor-heading"><div><div class="section-kicker">REVIEW BEFORE YOU SAVE</div><h2 id="editor-title">Make this report yours</h2><p>AI can get things wrong. Check every detail and adjust as needed.</p></div><button type="button" class="quiet-button" id="start-over">← Start over</button></div>
+        <div class="editor-grid">
+          <div class="work-card report-form-card">
+            <div class="classification-banner" id="classification-banner"><span class="classify-icon">✳</span><span><b id="classification-label">Suggested issue</b><small id="classification-method">AI suggestion · review before saving</small></span><span class="confidence-tag" id="confidence-tag"></span></div>
+            <label class="field-label" for="category-field">Issue type</label><select id="category-field" class="field-control"><option value="overflowing_bin">Overflowing bin</option><option value="pothole">Pothole or damaged road</option><option value="streetlight">Broken streetlight</option><option value="sidewalk">Damaged pavement or sidewalk</option><option value="drain">Blocked drain or waterlogging</option><option value="public_space">Neglected public space</option><option value="other">Other civic issue</option></select>
+            <div class="suggested-department">Suggested department <b id="department-field">Local Civic Authority</b></div>
+            <label class="field-label" for="title-field">Report title</label><input id="title-field" class="field-control" maxlength="120" placeholder="A short, clear title">
+            <label class="field-label" for="description-field">What’s happening?</label><textarea id="description-field" class="field-control textarea" rows="4" maxlength="2000" placeholder="Describe what you noticed and why it needs attention."></textarea><div class="field-hint">Stick to what you can see. Your words matter.</div>
+            <div class="form-row"><div class="form-field"><label class="field-label" for="severity-field">How urgent does it feel?</label><select id="severity-field" class="field-control"><option value="low">Low — minor inconvenience</option><option value="medium" selected>Medium — needs attention</option><option value="high">High — safety concern</option><option value="urgent">Urgent — immediate danger</option></select></div><div class="form-field"><label class="field-label" for="location-field">Where is it? <span class="optional-label">Optional</span></label><div class="location-input-wrap"><input id="location-field" class="field-control" maxlength="240" placeholder="Street, landmark, or area"><button type="button" class="location-button" id="location-button" title="Use my current location" aria-label="Use my current location">⌖</button></div><div class="coordinate-note hidden" id="coordinate-note"></div></div></div>
+            <button class="button button-green save-button" id="save-button" type="button"><span>Save my report</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5"/></svg></button><div class="inline-error" id="save-error" role="alert" aria-live="polite"></div>
+            <p class="submission-note"><span>ⓘ</span> This saves a draft for you. It does not submit anything to an authority.</p>
+          </div>
+          <aside class="report-preview-card"><div class="preview-card-header"><span>YOUR PHOTO</span><span class="preview-lock">Self-hosted</span></div><img id="editor-image" alt="Selected issue photo"><div class="photo-caption" id="editor-file-name"></div><div class="preview-card-footer"><span class="tiny-check">✓</span><span>Stored with your report<br><small>In this app’s storage</small></span></div></aside>
+        </div>
+      </section>
+
+      <section class="success-section hidden" id="success-section" aria-live="polite">
+        <div class="success-card"><div class="success-icon">✓</div><div class="success-copy"><div class="section-kicker">REPORT SAVED</div><h2>That’s a good step forward.</h2><p id="success-message">Your report is saved and ready for you to share.</p><div class="reference-chip" id="reference-chip"></div></div><div class="success-actions"><button class="button button-dark" id="copy-report" type="button">Copy report</button><a class="button button-outline" id="download-report" href="#">Download .txt</a></div></div>
+        <div class="manual-status"><div><b>Keep track, your way</b><p>Update this timeline when you hear back. These are your notes, not authority updates.</p></div><select id="status-field" class="field-control"><option value="ready_to_submit">Ready to submit</option><option value="submitted_by_user">I submitted it</option><option value="acknowledged">I got a response</option><option value="in_progress">Work is underway</option><option value="resolved">It’s resolved</option></select><span class="manual-badge">MANUAL</span></div>
+        <button class="button button-green new-report-button" id="new-report" type="button">Create another report <span>↗</span></button>
+      </section>
+
+      <section class="saved-section" id="saved-section"><div class="saved-heading"><div><div class="section-kicker">YOUR RECENT REPORTS</div><h2>Small actions add up</h2></div><span class="saved-count" id="saved-count">0 reports</span></div><div class="report-list" id="report-list"><div class="empty-reports"><span class="empty-icon">↗</span><span>Your saved reports will show up here.</span></div></div></section>
+      <div class="bottom-note"><span>✳</span> Built for people who care about the places they share. <a href="https://www.constructionworld.in/urban-infrastructure/wastewater-and-sewage-treatment/belagavi-secures-rs-1.35-billion-for-waste-management-under-citiis-2.0/70147" target="_blank" rel="noreferrer">Belagavi secured ₹1.35 billion for waste management ↗</a></div>
+    </main>
+    <footer class="footer"><span>FixIt Forward</span><span>Prepared with care. Shared when you’re ready.</span><a href="#hero-title">Back to top ↑</a></footer>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

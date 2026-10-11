@@ -1,0 +1,36 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-local-compose-change-this-secret}
+      DEBUG: "true"
+      ALLOWED_HOSTS: 127.0.0.1,localhost
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: fixit_forward
+      AI_MODE: ${AI_MODE:-local}
+      CLIP_MODEL: ${CLIP_MODEL:-openai/clip-vit-base-patch32}
+      MEDIA_ROOT: /app/media
+      HF_HOME: /app/model-cache
+    volumes:
+      - report-uploads:/app/media
+      - model-cache:/app/model-cache
+    depends_on:
+      mongo:
+        condition: service_healthy
+volumes:
+  mongo-data:
+  report-uploads:
+  model-cache:
