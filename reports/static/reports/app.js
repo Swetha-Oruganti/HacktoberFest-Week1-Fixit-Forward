@@ -257,5 +257,16 @@
   $("#copy-report").addEventListener("click", copyReport);
   $("#status-field").addEventListener("change", updateStatus);
   $("#location-button").addEventListener("click", useLocation);
+  $("#logout-button").addEventListener("click", async () => {
+    const button = $("#logout-button");
+    button.disabled = true;
+    try {
+      await api("/api/auth/logout/", { method: "POST", headers: { "X-CSRFToken": csrfToken() } });
+      window.location.reload();
+    } catch (error) {
+      button.disabled = false;
+      toast(error.message);
+    }
+  });
   loadReports();
 })();

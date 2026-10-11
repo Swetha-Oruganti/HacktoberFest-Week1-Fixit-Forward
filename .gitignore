@@ -8,3 +8,4 @@ staticfiles/
 .mypy_cache/
 .ruff_cache/
 model-cache/
+unused.sqlite3

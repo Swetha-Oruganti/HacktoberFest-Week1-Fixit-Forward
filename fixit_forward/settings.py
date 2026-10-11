@@ -12,12 +12,14 @@ ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "127.0.0.1,
 
 INSTALLED_APPS = [
     "django.contrib.staticfiles",
+    "django.contrib.sessions",
     "reports.apps.ReportsConfig",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -54,7 +56,14 @@ CLIP_MODEL = os.getenv("CLIP_MODEL", "openai/clip-vit-base-patch32")
 HF_HOME = os.getenv("HF_HOME", str(BASE_DIR / "model-cache"))
 
 if not DEBUG:
+    if len(SECRET_KEY) < 50 or "replace" in SECRET_KEY.lower() or "change-before-deploy" in SECRET_KEY:
+        raise RuntimeError("Set a unique SECRET_KEY of at least 50 characters before running with DEBUG=false.")
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     X_FRAME_OPTIONS = "DENY"
+
+SESSION_ENGINE = "reports.sessions"
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
