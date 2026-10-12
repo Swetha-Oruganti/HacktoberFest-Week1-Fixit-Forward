@@ -1,53 +1,49 @@
-# FixIt Forward
+# Fixit Forward
 
-Turn an observation into a clear, editable civic issue report. Upload a photo, review a local AI suggestion, add an optional location, then save, copy, or download the report. Saving creates a draft in your own MongoDB instance; it does not submit anything to a civic authority.
+Fixit Forward turns a photo of a public issue into a clear, editable report. People can save it privately, copy or download it, and track replies manually. The app does **not** submit reports to civic authorities or claim an official status.
 
-## Features
+## What works
 
-- Local image analysis with an open-weight CLIP model (`openai/clip-vit-base-patch32`). The first run downloads model weights; after that, inference stays on this machine. Set `AI_MODE=heuristic` to disable model inference, or `AI_MODE=local` to require the model and fail clearly if it is unavailable.
-- Editable issue type, title, description, and severity before a report is saved.
-- Email and password sign-up/sign-in, with per-account report ownership and protected photo/export endpoints.
-- Django password hashing, CSRF-protected authentication requests, short-window login throttling, and revocable server-side sessions in MongoDB.
-- Optional browser location, plus manual location/address entry.
-- Reports saved to MongoDB with a manual status timeline and a generated printable/exportable report.
-- Photo files stay on the app's media volume; only the report metadata and file path are stored in MongoDB.
-- The MVP does not yet include email verification or password reset. Add those flows before a public launch.
+- React + Vite interface and Express + Node API, with MongoDB persistence (MERN).
+- Sign up, sign in, and private per-account reports. Passwords are hashed and sessions use HTTP-only cookies.
+- Upload a JPG, PNG, or WebP photo (8 MB limit). The server checks the file signature and only serves saved photos to their owner.
+- Optional open-weight CLIP image suggestions using Transformers.js. The model runs on the Node server; images are not sent to a commercial inference API. The model downloads on its first use and needs internet access for that initial download. Set `AI_MODE=manual` to skip classification and fill the report yourself.
+- Edit issue type, title, description, priority, and optional location. Copy report text or download it as `.txt`.
+- Manually track “Ready to submit”, “Submitted by me”, “Acknowledged”, and “Resolved”. These statuses are not synced with an authority.
 
 ## Run locally
 
-Requirements: Python 3.11+, MongoDB 7+, and (for local AI) enough disk space and memory for PyTorch and CLIP weights.
+Requirements: Node.js 20+, npm, and Docker Desktop (for the quick local MongoDB option) or a MongoDB Atlas database. You do not need an AI API key, maps key, or paid service.
 
-```powershell
-Copy-Item .env.example .env
-py -3.11 -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-```
+1. Start a local MongoDB container with `npm run db:up`. Or create a free MongoDB Atlas cluster: create a database user, add your current IP to **Network Access**, then choose **Connect → Drivers → Node.js** and copy the connection string. Replace `<db_password>` with the database user's password and add `/fixit-forward` before the query parameters, for example `mongodb+srv://USER:PASSWORD@cluster.example.mongodb.net/fixit-forward?retryWrites=true&w=majority`.
+2. From this folder, create your local environment file:
 
-Edit `.env` first if you need to change the MongoDB connection, secret key, or AI mode.
+   ```powershell
+   Copy-Item .env.example .env
+   ```
 
-Open http://127.0.0.1:8000, create an account, and then start a report. For a quick demo without downloading AI weights, set `AI_MODE=heuristic` in `.env`. This uses transparent keyword heuristics and reports that mode in the UI; it is not AI inference. `AI_MODE=local` uses CLIP on the app server and never sends the image to a commercial inference API. The model name can be changed with `CLIP_MODEL`; provide a compatible Hugging Face zero-shot image classification model.
+3. In `.env`, set a long random `JWT_SECRET`. Keep `.env` private; it is ignored by Git. If using Atlas, replace `MONGODB_URI` with your connection string. To run without downloading the image model, set `AI_MODE=manual`.
+4. Install packages and start both servers:
 
-For containers, `docker compose up --build` starts MongoDB and Django. The app is available at http://127.0.0.1:8000 and MongoDB data and uploads persist in named volumes.
+   ```powershell
+   npm install
+   npm run dev
+   ```
 
-## Data and privacy
+5. Open [http://localhost:5173](http://localhost:5173). The API runs on port 5000. For the first image suggestion in local AI mode, allow time for the model to download. Later use can run locally.
 
-Location is optional. Browser location is requested only after the person clicks the location button. Photo EXIF is not used to infer location and is removed when the photo is saved. In local mode, image bytes are processed by the model in the app process. MongoDB stores password hashes, accounts, revocable sessions, report text, classification metadata, status history, and a relative image path; the image itself is stored in `media/` and served only to its owner. Configure backup, retention, HTTPS, and email verification/reset before hosting real reports. Avoid uploading identifiable people, vehicle plates, or sensitive scenes.
+For a production build, run `npm run build`, then start the API with `npm start` and `NODE_ENV=production`. Set `CLIENT_ORIGIN` to the deployed frontend origin and use HTTPS so secure cookies are enabled.
+
+## Privacy and limits
+
+Location is requested only after the user selects the location button. Photos and reports are private to the account that uploaded them. The app does not remove EXIF metadata yet, so avoid uploading photos containing sensitive metadata. This is an MVP: before public deployment, add email verification, password recovery, photo retention cleanup, stronger anti-abuse controls, deployment backups, and privacy/legal review. Open the selected report and use **Copy report** or **Download .txt** to submit it through your local authority's actual channel.
 
 ## Project layout
 
-- `reports/services/classifier.py`: replaceable local classifier adapter and deterministic demo fallback.
-- `reports/services/reporting.py`: report formatting and authority-neutral report text.
-- `reports/repository.py`: MongoDB persistence boundary.
-- `reports/views.py`: upload analysis, report creation, status updates, exports, and app pages.
-- `reports/static/reports/`: responsive user interface.
-
-## Status tracking
-
-Status updates are manual and stored as a timeline. The app has no civic authority integration and does not claim that a report has been submitted or acknowledged.
-
-## Development
-
-Install the dependencies above, run MongoDB, and use `python manage.py check`. No credentials are required for the local demonstration.
+```text
+src/                   React app and styles
+server/index.js        Express server and MongoDB connection
+server/routes/api.js   Auth, upload, report, status, and export data endpoints
+server/models/         MongoDB account, report, and private image records
+server/services/       Open-weight image classification adapter
+```
